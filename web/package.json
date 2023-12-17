@@ -1,0 +1,19 @@
+{
+  "name": "urban_umbra-web",
+  "version": "1.0.0",
+  "description": "Web client",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kontrosha/urban_umbra.git"
+  },
+  "author": "https://github.com/Dmitrycmc",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Kontrosha/urban_umbra/issues"
+  },
+  "homepage": "https://github.com/Kontrosha/urban_umbra#readme"
+}

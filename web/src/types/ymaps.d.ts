@@ -1,5 +1,5 @@
 declare namespace ymaps {
-    type Coords = [number, number]
+    type Coordinates = [number, number]
 
     function ready(cb: () => void);
 
@@ -14,14 +14,18 @@ declare namespace ymaps {
 
     class Placemark {
         constructor(
-            coords: Coords,
+            coordinates: Coordinates,
             state: PlacemarkState,
             options: PlacemarkOptions
         );
+
+        events: {
+            add: (type: 'click', cb: () => void) => void
+        }
     }
 
     interface MapState {
-        center: Coords;
+        center: Coordinates;
         zoom: number;
     }
 
@@ -39,5 +43,7 @@ declare namespace ymaps {
         geoObjects: {
             add: (placemark: Placemark) => void
         }
+
+        setBounds: ([Coordinates, Coordinates]) => void
     }
 }

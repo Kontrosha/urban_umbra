@@ -1,5 +1,6 @@
 type Placemark = {
-    coords: [number, number],
+    coordinates: [number, number],
     htmlContent?: string,
     color?: string
+    onClick?: () => void
 }

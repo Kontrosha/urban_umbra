@@ -8,15 +8,16 @@
         Получить ключ можно в Кабинете разработчика: https://developer.tech.yandex.ru/keys/
     -->
     <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey=<ваш API-ключ>" type="text/javascript"></script>
-    <script src="placemark.js" type="text/javascript"></script>
-    <style>
-        html, body, #map {
-            width: 100%; height: 100%; padding: 0; margin: 0;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="map"></div>
+    <div id="container">
+        <div id="map"></div>
+        <div id="info">
+            <h1 id="title"></h1>
+            <span id="description"></span>
+        </div>
+    </div>
     <script src="index.js"></script>
 </body>
 </html>

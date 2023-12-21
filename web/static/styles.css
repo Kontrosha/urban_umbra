@@ -1,0 +1,23 @@
+* {
+    padding: 0; margin: 0;
+}
+
+#map {
+    width: 640px; height: 480px;
+}
+
+#info {
+    padding: 32px;
+}
+
+#container {
+    display: flex;
+}
+
+#title {
+    margin-bottom: 16px;
+}
+
+#description {
+
+}

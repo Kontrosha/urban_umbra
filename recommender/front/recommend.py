@@ -5,12 +5,12 @@ import heapq
 import random
 
 # number of recommendations
-N = 10 
+num_indices = 10 
 
 with open('recommender.pkl', 'rb') as f:
     rec = pickle.load(f)
 
-def scale_SVD_values(values):
+def scale_values(values):
     min_value = min(values)
     _values = [value - min_value for value in values]
     max_value = max(_values)
@@ -33,13 +33,12 @@ def recommend(hotel_id):
     user_list = rec['hotels_users'][hotel_id]
     usr_id = random.choice(user_list)
     usr_idx = rec['user_ids_dict'][usr_id]
-    U3, S3, Vt3 = svds(rec['interaction_matrix'].astype(np.float32), k=20)
-    SVD_right3 = np.dot(np.sqrt(np.diag(S3)), Vt3)
-    prod3 = np.dot(U3[usr_idx, :], SVD_right3)
-    scaled_values3 = scale_SVD_values(prod3)
-    print(np.argmax(scaled_values3))
-    top_N_indices3 = get_top_n_indices(scaled_values3, N)
+    U, S, V_t = svds(rec['interaction_matrix'].astype(np.float32), k=20)
+    SVD_r = np.dot(np.sqrt(np.diag(S)), V_t)
+    usr_vector = np.dot(U[usr_idx, :], SVD_r)
+    scaled_values = scale_values(usr_vector)
+    top_indices = get_top_n_indices(scaled_values, num_indices)
     recommendation_list = []
-    for ind in top_N_indices3:
+    for ind in top_indices:
         recommendation_list.append(process_recommendation(ind))
     return recommendation_list

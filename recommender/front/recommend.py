@@ -30,14 +30,18 @@ def process_recommendation(ind):
     return recommendation
 
 def recommend(hotel_id):
+    # user selection
     user_list = rec['hotels_users'][hotel_id]
     usr_id = random.choice(user_list)
     usr_idx = rec['user_ids_dict'][usr_id]
+    # truncated SVD
     U, S, V_t = svds(rec['interaction_matrix'].astype(np.float32), k=20)
     SVD_r = np.dot(np.sqrt(np.diag(S)), V_t)
     usr_vector = np.dot(U[usr_idx, :], SVD_r)
+    # scaling, top selection
     scaled_values = scale_values(usr_vector)
     top_indices = get_top_n_indices(scaled_values, num_indices)
+    
     recommendation_list = []
     for ind in top_indices:
         recommendation_list.append(process_recommendation(ind))

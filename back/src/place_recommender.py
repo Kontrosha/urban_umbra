@@ -8,6 +8,7 @@ sys.path.append(project_root)
 import requests
 import json
 from flask import Flask, request, jsonify
+from flask_cors import cross_origin
 from openai import OpenAI
 from recommender.front.recommend import Recommender
 
@@ -117,6 +118,7 @@ def get_summury_review_from_chatgpt(location_name, all_reviews):
 
 
 @app.route('/get_closest_coordinates', methods=['POST'])
+@cross_origin()
 def get_closest_coordinates():
     data = request.get_json()
 

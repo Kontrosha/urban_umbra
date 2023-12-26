@@ -1,19 +1,30 @@
-import json
+import os
+import sys
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.join(current_dir, "../../")
+sys.path.append(project_root)
 
 import requests
+import json
 from flask import Flask, request, jsonify
 from openai import OpenAI
-
 from urban_umbra.recommender.front.recommend import Recommender
 
 app = Flask(__name__)
 
-# Yandex Maps API key
-yandex_maps_api_key = "00986bf4-3f13-4e13-b5d5-3d7ae47a018e"
+# Read keys from config
+current_dir = os.path.dirname(__file__)
+file_path = os.path.join(current_dir, 'openapi')
 
-# ChatGPT API endpoint
-chatgpt_api_key = "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"
+with open('keys/config.json') as config_file:
+    config = json.load(config_file)
+
+chatgpt_api_key = config['OPEN_AI_KEY']
 client = OpenAI(api_key=chatgpt_api_key)
+
+# Yandex Maps API key
+yandex_maps_api_key = config['YANDEX_MAPS_KEY']
 
 if not yandex_maps_api_key:
     raise ValueError("key 'yandex_maps_api_key' is not provided")

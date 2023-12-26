@@ -1,29 +1,18 @@
+import json
+
 import requests
 from flask import Flask, request, jsonify
-from geopy.distance import geodesic
 from openai import OpenAI
 
-app = Flask(__name__)
+from urban_umbra.recommender.front.recommend import Recommender
 
-# Sample data for demonstration
-ml_data = {
-    "category_1": [(37.7749, -122.4194), (34.0522, -118.2437), (40.7128, -74.0060)],
-    "category_2": [(41.8781, -87.6298), (51.5074, -0.1278), (45.4215, -75.6992)],
-    "category_3": [(34.0522, -118.2437), (40.7128, -74.0060), (37.7749, -122.4194)],
-    "category_4": [(51.5074, -0.1278), (45.4215, -75.6992), (41.8781, -87.6298)],
-    "category_5": [(40.7128, -74.0060), (37.7749, -122.4194), (34.0522, -118.2437)],
-    "category_6": [(45.4215, -75.6992), (41.8781, -87.6298), (51.5074, -0.1278)],
-    "category_7": [(37.7749, -122.4194), (34.0522, -118.2437), (40.7128, -74.0060)],
-    "category_8": [(51.5074, -0.1278), (45.4215, -75.6992), (41.8781, -87.6298)],
-    "category_9": [(34.0522, -118.2437), (40.7128, -74.0060), (37.7749, -122.4194)],
-    "category_10": [(45.4215, -75.6992), (41.8781, -87.6298), (51.5074, -0.1278)],
-}
+app = Flask(__name__)
 
 # Yandex Maps API key
 yandex_maps_api_key = "00986bf4-3f13-4e13-b5d5-3d7ae47a018e"
 
 # ChatGPT API endpoint
-chatgpt_api_key = "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"
+chatgpt_api_key = "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"
 client = OpenAI(api_key=chatgpt_api_key)
 
 if not yandex_maps_api_key:
@@ -34,18 +23,21 @@ if not chatgpt_api_key:
 
 class GeoPoint:
     name = None
-    description = None
+    description = "empty"
+    coordinates = None
 
-    def __init__(self, coordinates=None):
-        self.coordinates = coordinates
-        self.set_name()
+    def __init__(self, name=None, location=None, reviews=None):
+        self.name = name
+        self.location = location
+        self.set_coordinates()
         self.set_description()
+        self.reviews = self.total_review(reviews)
 
-    def set_name(self, name=None):
-        if name is None:
-            self.name = get_location_name(self.coordinates)
+    def set_coordinates(self, coordinates=None):
+        if coordinates is None:
+            self.coordinates = get_location_coordinates(self.location + " " + self.name)
         else:
-            self.name = name
+            self.coordinates = coordinates
 
     def set_description(self, description=None):
         if description is None:
@@ -53,26 +45,34 @@ class GeoPoint:
         else:
             self.description = description
 
+    # TODO @Kontrosha: rethink sending requests
+    def total_review(self, reviews):
+        # if reviews:
+        #     all_reviews = ' '.join(reviews)
+        #     return get_summury_review_from_chatgpt(self.name, all_reviews)
+        # else:
+        return "No reviews"
+
     def get_point(self):
         return {
             "name": self.name,
             "coordinates": self.coordinates,
             "description": self.description,
+            "review": self.reviews
         }
 
 
-def get_location_name(coordinates):
+def get_location_coordinates(name):
     """
     Get the name of a location using Yandex Maps API.
     """
-    url = f"https://geocode-maps.yandex.ru/1.x/?apikey={yandex_maps_api_key}&format=json&geocode={coordinates[1]},{coordinates[0]}"
+    url = f"https://geocode-maps.yandex.ru/1.x/?apikey={yandex_maps_api_key}&format=json&geocode=Австрия+Тироль+{name.lower()}"
     response = requests.get(url)
     data = response.json()
-    print("Yandex answer")
-    print(response.text)
     try:
-        name = data['response']['GeoObjectCollection']['featureMember'][0]['GeoObject']['name']
-        return name
+        coordinates = data['response']['GeoObjectCollection']['featureMember'][0]['GeoObject']['Point']['pos'].split(
+            ' ')
+        return coordinates[1], coordinates[0]
     except (KeyError, IndexError):
         return "Unknown Location"
 
@@ -81,7 +81,21 @@ def get_description_from_chatgpt(location_name):
     """
     Get a short description for a location using ChatGPT.
     """
-    message = f" Чат, привет! Ты не мог бы рассказать мне про это место? Двух-трех преложений будет достаточно {location_name}"
+    message = f" Чат, привет! Ты не мог бы рассказать мне про это место в Австрии, Тироле, {location_name}? Двух-трех преложений будет достаточно."
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "user", "content": message},
+        ],
+    )
+    return response.choices[0].message.content
+
+
+def get_summury_review_from_chatgpt(location_name, all_reviews):
+    """
+    Get a short description for a location using ChatGPT.
+    """
+    message = f" Чат, привет! Ты не мог сделать краткий отзыв-выжимику этих отзывов {all_reviews} о месте {location_name} в Австрии, Тироль. Только выбери хорошие, пожалуйста, также ограничься 1-2 предложениями."
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
@@ -96,18 +110,16 @@ def get_closest_coordinates():
     data = request.get_json()
 
     # Extract parameters from frontend
-    user_category = data.get('category')
-    user_coordinates = (data.get('latitude'), data.get('longitude'))
+    user_hotel = data.get('hotel')
 
     # Get coordinates from ML based on the user's category
-    ml_coordinates = ml_data.get(user_category, [])
+    recommendator = Recommender()
+    recommended_places = recommendator.recommend(user_hotel)
 
-    # Calculate distances and find the closest 3 coordinates
-    distances = [(coord, geodesic(user_coordinates, coord).kilometers) for coord in ml_coordinates]
-    closest_coordinates = sorted(distances, key=lambda x: x[1])[:3]
+    with open('example_answer.json', encoding='koi8-r', mode='w') as file:
+        json.dump(recommended_places, file)
 
-    # Extract only the coordinates from the result
-    geo_points = [GeoPoint(coord[0]) for coord in closest_coordinates]
+    geo_points = [GeoPoint(place['name'], place['location'], place['reviews']) for place in recommended_places]
 
     return jsonify([point.get_point() for point in geo_points])
 

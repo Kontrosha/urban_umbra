@@ -4,9 +4,7 @@ import requests
 
 url = "http://127.0.0.1:5000/get_closest_coordinates"
 data = {
-    "category": "category_1",
-    "latitude": 37.7749,
-    "longitude": -122.4194
+    "hotel": "Miramonti Boutique Hotel",
 }
 
 response = requests.post(url, json=data)

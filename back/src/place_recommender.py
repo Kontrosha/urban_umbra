@@ -9,15 +9,15 @@ import requests
 import json
 from flask import Flask, request, jsonify
 from openai import OpenAI
-from urban_umbra.recommender.front.recommend import Recommender
+from recommender.front.recommend import Recommender
 
 app = Flask(__name__)
 
 # Read keys from config
 current_dir = os.path.dirname(__file__)
-file_path = os.path.join(current_dir, 'openapi')
+file_path = os.path.join(current_dir, 'keys/config.json')
 
-with open('keys/config.json') as config_file:
+with open(file_path) as config_file:
     config = json.load(config_file)
 
 chatgpt_api_key = config['OPEN_AI_KEY']
@@ -136,4 +136,4 @@ def get_closest_coordinates():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=10888)

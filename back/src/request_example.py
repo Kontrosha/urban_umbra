@@ -2,7 +2,7 @@ import json
 
 import requests
 
-url = "http://127.0.0.1:5000/get_closest_coordinates"
+url = "http://kontrosha.pythonanywhere.com/get_closest_coordinates"
 data = {
     "hotel": "Miramonti Boutique Hotel",
 }

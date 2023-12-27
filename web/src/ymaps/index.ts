@@ -12,10 +12,12 @@ export const renderMap = async (nodeId: string): Promise<void> => new Promise(re
     })
 })
 
-export const renderPlacemarks = async (placemarks: Placemark[]): Promise<void> => new Promise(res => {
+export const rerenderPlacemarks = async (placemarks: Placemark[]): Promise<void> => new Promise(res => {
     ymaps.ready(() => {
         const boundingRect = getBoundingRect(placemarks.map(placemark => placemark.coordinates))
         mapInstance.setBounds(boundingRect)
+
+        mapInstance.geoObjects.removeAll();
 
         placemarks.forEach(pm => {
             const placemark = new ymaps.Placemark(pm.coordinates, {

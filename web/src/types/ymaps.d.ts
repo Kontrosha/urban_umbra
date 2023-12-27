@@ -42,6 +42,7 @@ declare namespace ymaps {
 
         geoObjects: {
             add: (placemark: Placemark) => void
+            removeAll(): () => void
         }
 
         setBounds: ([Coordinates, Coordinates]) => void

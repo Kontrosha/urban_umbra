@@ -5,4 +5,5 @@ export interface Place {
     coordinates: Coordinates,
     name: string
     description: string,
+    review: string
 }

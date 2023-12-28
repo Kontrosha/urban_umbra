@@ -9,7 +9,7 @@ from scipy.sparse.linalg import svds
 
 class Recommender:
     # number of recommendations
-    num_indices = 3
+    num_indices = 10
 
     def __init__(self):
         current_dir = os.path.dirname(__file__)
